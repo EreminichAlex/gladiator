@@ -1,0 +1,126 @@
+body {
+    background-image: url(/backgrounds/background-main.jpg);
+    background-repeat: no-repeat;
+    background-position: 50% 0%;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+.main-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+.main-wrapper h1 {
+    font-size: 4em;
+}
+
+.main-start-window {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    max-width: 800px;
+    min-height: 400px;
+    background-color: aliceblue;
+    margin-top: 150px;
+    padding: 30px 30px;
+    border-radius: 2%;
+}
+
+.main-start-window h2 {
+    font-size: 2em;
+}
+
+.main-start-window input {
+    border: 1px solid rgb(34, 29, 29);
+    text-align: center;
+    padding: 3px 5px;
+    font-weight: bold;
+}
+
+.main-start-window input:focus {
+    background-color: rgb(253, 235, 212);
+    border: 1px solid rgb(114, 106, 106);
+}
+
+.main-start-window button {
+    padding: 20px 30px;
+    background-color: rgb(253, 235, 212);
+    border: 1px solid #fff;
+    transition: border 0.2s ease-out, background-color 0.2s ease-out;
+}
+
+.main-start-window button:hover {
+    border: 1px solid #000;
+    background-color: rgb(230, 215, 196);
+
+}
+
+.main-start-window button:active {
+    opacity: 0.7;
+}
+
+.main-start-window p {
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-size: 1.2em;
+    text-align: center;
+}
+
+.main-game-window {
+    display: grid;
+    padding: 20px;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 2fr 1fr;
+    gap: 30px;
+    grid-template-areas: 
+        "A C"
+        "B C"
+    ;
+    margin-top: 100px;
+    max-width: 800px;
+    min-height: 300px;
+    background: linear-gradient(45deg, rgb(184, 113, 113), rgb(219, 176, 176), rgb(255, 214, 169));
+    border: 3px solid rgb(0, 0, 0);
+    border-radius: 4%;
+}
+
+.main-game-window h3{
+    font-size: 1.4em;
+}
+
+.character {
+    grid-area: A;
+}
+
+.character p {
+    margin-top: 8px;
+}
+
+.character h3 {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.character img {
+    width: 14em;
+    margin-bottom: 40px;
+}
+
+.actions {
+    text-align: center;
+    grid-area: C;
+}
+
+
+
+
+
+
+
+.block-hidden {
+    display: none;
+}
+.block-show {
+    display: block;
+}
