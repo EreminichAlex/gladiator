@@ -23,10 +23,40 @@
 <!--         -->
             </div>
             <div class="shop">
-
+                <h3>Магазин</h3>
+                <ul>
+                    <li><button type="submit" id="buttonWeaponShop">Оружие</button></li>
+                    <li><button type="submit" id="buttonArmorShop">Броня</button></li>
+                </ul>
             </div>
             <div class="actions">
                 <h3>Действия</h3>
+                <div class="actions-wrapper">
+                    <ul>
+                        <li><button type="submit" id="train-button">Тренироваться</button></li>
+                        <li><button type="submit" id="regular-fight-button">Отправить сражаться на улицы города</button></li>
+                        <li><button type="submit" id="arena-fight-button">Отправить на арену</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="shop-window block-hidden">
+                <h2>Магазин</h2>
+                <div class="shop-window-wrapper">
+                </div>
+            <button type="submit" id="shop-close-button">закрыть</button>
+        </div>
+        <div class="train-window block-hidden">
+            <h2>Тренировка</h2>
+            <div class="train-window-text">
+                <p>Отправить бойца на тренировку? Постоянные тренировки с мастерами 
+                    будут повышать опыт вашего подопечного, а соответственно 
+                    и его силу и здоровье.</p>
+                <p>Стоимоть: <u><i>5 монет</i></u></p>
+            </div>
+            <div class="train-window-buttons">
+                <button type="submit" id="train-window-button-start">Начать</button>
+                <button type="submit" id="train-window-button-close">Отмена</button>
             </div>
         </div>
     </div>
