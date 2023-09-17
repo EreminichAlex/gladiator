@@ -40,12 +40,18 @@
                 </div>
             </div>
         </div>
-        <div class="shop-window block-hidden">
+        <div class="shop-weapon-window block-hidden">
                 <h2>Магазин</h2>
-                <div class="shop-window-wrapper">
+                <div class="shop-weapon-window-wrapper">
                 </div>
-            <button type="submit" id="shop-close-button">закрыть</button>
+            <button type="submit" id="shop-weapon-close-button">закрыть</button>
         </div>
+        <div class="shop-armor-window block-hidden">
+            <h2>Магазин</h2>
+            <div class="shop-armor-window-wrapper">
+            </div>
+        <button type="submit" id="shop-armor-close-button">закрыть</button>
+    </div>
         <div class="train-window block-hidden">
             <h2>Тренировка</h2>
             <div class="train-window-text">
@@ -54,9 +60,37 @@
                     и его силу и здоровье.</p>
                 <p>Стоимоть: <u><i>5 монет</i></u></p>
             </div>
+            <div class="train-window-after-info block-hidden">
+
+            </div>
             <div class="train-window-buttons">
                 <button type="submit" id="train-window-button-start">Начать</button>
                 <button type="submit" id="train-window-button-close">Отмена</button>
+            </div>
+        </div>
+        <div class="regular-fight-window block-hidden">
+            <h2>Бой</h2>
+            <div class="rfw-opponents-main">
+                <div class="player-info-regular-fight-window">
+                    <!-- <h3>NAME</h3>
+                    <img src="/profile-pic/user-profile.png" alt="player pic">
+                    <p>Здоровье: %health%</p>
+                    <p>Сила: %power%</p>
+                    <p>Броня: %armor%</p>
+                    <p>Уровень: %lvl% </p> -->
+                </div>
+                <div class="opponent-info-regular-fight-window">
+                    <!-- <h3>NAME</h3>
+                    <img src="/profile-pic/random-opponent.png" alt="opponent pic">
+                    <p>Здоровье: %health%</p>
+                    <p>Сила: %power%</p>
+                    <p>Броня: %armor%</p>
+                    <p>Уровень: %lvl% </p> -->
+                </div>
+            </div>
+            <div class="regular-fights-buttons">
+                <button type="submit" id="regular-fights-button-start">Начать</button>
+                <button type="submit"id="regular-fights-button-cancel">Отмена</button>
             </div>
         </div>
     </div>

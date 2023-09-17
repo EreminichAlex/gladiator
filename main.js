@@ -156,17 +156,26 @@ const armorItems = [
         armorID: 8
     }
 ]
+const playerWeaponInventory = [];
+const playerArmorInventory = [];
+
+const regularEnemiesName = [
+    "Луций", "Марк", "Александр", "Базил", "Вергилий", "Габит", 
+"Райан", "Артолио", "Рэйли", "Логан", "Ален", "Арман", "Гастон", "Бонифас", "Доминик", 
+"Климент", "Наполеон", "Ержан", "Север", "Саломон", "Роберт", "Юта", "Фридрих"
+];
 
 
 let playerName;
 
 const submitPlayerName = document.querySelector("#name-submit");
 const characterStata = document.querySelector(".character");
+const mainWindow = document.querySelector('.main-game-window');
 let submitCreating;
 
 let health;
 let power;
-let armor = 0;
+let armor = 1;
 let experience = 0;
 let level = 1;
 let money = 0;
@@ -215,18 +224,12 @@ function start() {
             submitCreating = document.querySelector('#after-creating-submit');
             submitCreating.addEventListener('click', ()=> {
                 greetingsWindow.classList.add('block-hidden');
-                const mainWindow = document.querySelector('.main-game-window');
                 mainWindow.classList.remove("block-hidden");
                 mainWindow.classList.add("main-game-window");
                 return;
             });
         }, 500);
 
-        function getRandomInt(min, max) {
-            min = Math.ceil(min);
-            max = Math.floor(max);
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-        }
         health = getRandomInt(10,20);
         power = getRandomInt(3,6);
 
@@ -240,8 +243,6 @@ function start() {
 
         characterStata.innerHTML = characterStataTemplateText;
     });
-    
-
 }
 
 function refreshStata() {
@@ -253,30 +254,41 @@ function refreshStata() {
                         .replace("%lvl%", level)
                         .replace("%money%", money);
     characterStata.innerHTML = characterStataTemplateText;
+    if (experience >= 10) {
+        level++;
+        experience = experience - 10;
+        health += statisticGenerationByLevel(level).health - health;
+        power += statisticGenerationByLevel(level).power - power;
+    }
 }
 
+// --------- SHOP <---------------------------------------------
 
 const weaponShopBtn = document.querySelector("#buttonWeaponShop");
 const armorShopBtn = document.querySelector("#buttonArmorShop");
-const shopWindow = document.querySelector(".shop-window");
-const shopCloseBtn = document.querySelector("#shop-close-button");
-const shopContainer = document.querySelector('.shop-window-wrapper');
+const shopWeaponWindow = document.querySelector(".shop-weapon-window");
+const shopArmorWindow = document.querySelector(".shop-armor-window");
+const shopWeaponCloseBtn = document.querySelector("#shop-weapon-close-button");
+const shopArmorCloseBtn = document.querySelector("#shop-armor-close-button");
+const shopWeaponContainer = document.querySelector('.shop-weapon-window-wrapper');
+const shopArmorContainer = document.querySelector('.shop-armor-window-wrapper');
 
 weaponShopBtn.addEventListener('click', openWeaponShop);
-shopCloseBtn.addEventListener('click', closeShop);
+shopWeaponCloseBtn.addEventListener('click', closeShop);
+shopArmorCloseBtn.addEventListener('click', closeShop);
 
 armorShopBtn.addEventListener('click', openArmorShop);
 
+createWeaponShop();
 
-function openWeaponShop() {
-    shopWindow.classList.toggle('block-hidden');
-    weaponShopBtn.setAttribute('disabled','');
+
+function createWeaponShop() {
     const itemShopTemplate = `
     <div class="weapon-shop-item">
     <h3>%itemName%</h3>
     <p>%charText%</p>
     <p>%cost%</p>
-    <button type="submit">Купить</button>
+    <button type="submit" id="weapon-buy-button">Купить</button>
     </div>
     `;
 
@@ -285,20 +297,17 @@ function openWeaponShop() {
                                     .replace("%itemName%", item.name)
                                     .replace("%charText%", item.itemCharacteristicsText)
                                     .replace("%cost%", item.costText)
-        shopContainer.innerHTML += shopItemCard;
+        shopWeaponContainer.innerHTML += shopItemCard;
     }
-
 }
-function openArmorShop() {
-    shopWindow.classList.toggle('block-hidden');
-    armorShopBtn.setAttribute('disabled', '');
-
+createArmorShop();
+function createArmorShop() {
     const itemShopTemplate = `
     <div class="weapon-shop-item">
     <h3>%itemName%</h3>
     <p>%charText%</p>
     <p>%cost%</p>
-    <button type="submit">Купить</button>
+    <button type="submit" id="armor-buy-button">Купить</button>
     </div>
     `;
 
@@ -307,31 +316,188 @@ function openArmorShop() {
                                     .replace("%itemName%", item.name)
                                     .replace("%charText%", item.itemCharacteristicsText)
                                     .replace("%cost%", item.costText)
-        shopContainer.innerHTML += shopItemCard;
+        shopArmorContainer.innerHTML += shopItemCard;
     }
+}
+
+function openWeaponShop() {
+    shopWeaponWindow.classList.toggle('block-hidden');
+    weaponShopBtn.setAttribute('disabled','');
+}
+
+function openArmorShop() {
+    shopArmorWindow.classList.toggle('block-hidden');
+    armorShopBtn.setAttribute('disabled', '');
 };
 
-
 function closeShop() {
-    shopWindow.classList.toggle('block-hidden');
-    shopContainer.innerHTML = '';
+    shopWeaponWindow.classList.add('block-hidden');
+    shopArmorWindow.classList.add('block-hidden');
     armorShopBtn.removeAttribute('disabled');
     weaponShopBtn.removeAttribute('disabled');
     refreshStata();
 };
+
+// SHOP BUYING
+const weaponBuyBtn = document.querySelectorAll("#weapon-buy-button");
+const armorBuyBtn = document.querySelectorAll('#armor-buy-button');
+
+
+for (let i = 0 ; i < weaponBuyBtn.length; i++) {
+    weaponBuyBtn[i].addEventListener('click', weaponBuyingFunction);
+    function weaponBuyingFunction() {
+        while (true) {
+            if (money < weaponItems[i].cost) {
+                alert("У вас недостаточно денег!");
+            }  else if (money >= weaponItems[i].cost){
+                weaponBuyBtn[i].setAttribute('disabled', '');
+                playerWeaponInventory.push(i);
+                weaponBuyBtn[i].innerHTML = "Куплено";
+                money -= weaponItems[i].cost;
+                refreshStata();
+            }
+        break;}
+    }
+}
+
+for (let i = 0 ; i < armorBuyBtn.length; i++) {
+    armorBuyBtn[i].addEventListener('click', armorBuyingFunction);
+    function armorBuyingFunction() {
+        while (true) {
+            if (money < armorItems[i].cost) {
+                alert("У вас недостаточно денег!");
+            }  else if (money >= armorItems[i].cost){
+                armorBuyBtn[i].setAttribute('disabled', '');
+                playerArmorInventory.push(i);
+                armorBuyBtn[i].innerHTML = "Куплено";
+                money -= armorItems[i].cost;
+                refreshStata();
+            }
+        break;}
+    }
+}
+
+
 
 // -----------------------  ACTIONS -----------------
 
 const trainBtn = document.querySelector('#train-button');
 const trainWindow = document.querySelector('.train-window');
 const trainWindowBtnClose = document.querySelector('#train-window-button-close');
-const trainWindowBtnStart = document.querySelector('train-window-button-start');
+const trainWindowBtnStart = document.querySelector('#train-window-button-start');
 const regulatFightBth = document.querySelector('#regular-fight-button');
 const arenaFightBtn = document.querySelector('#arena-fight-button');
+const trainWindowInfo = document.querySelector('.train-window-after-info');
+
+const regularFightWindow = document.querySelector('.regular-fight-window');
+const regularFightStartBtn = document.querySelector('#regular-fights-button-start');
+const regularFightCancelBtn = document.querySelector('#regular-fights-button-cancel');
+const regularFightPlayerInfoContainer = document.querySelector(".player-info-regular-fight-window");
 
 function trainWindowCloseOpen() {
     trainWindow.classList.toggle('block-hidden');
-}
+    refreshStata();
+};
 trainBtn.addEventListener('click', trainWindowCloseOpen);
 trainWindowBtnClose.addEventListener('click', trainWindowCloseOpen);
 
+// TRAIN action
+
+trainWindowBtnStart.addEventListener('click', () => {
+    refreshStata();
+    if (money < 5) {
+        alert("У вас недостаточно денег!");
+        trainWindowCloseOpen();
+    } else {
+        trainWindowInfo.classList.toggle('block-hidden');
+        money -= 5;
+        let trainXpPlus = getRandomInt(1,3);
+        let trainInfo = (trainXpPlus === 1) ? `Вы неплохо поработали и заработали 1xp` 
+        : (trainXpPlus === 2) ? `Ваша тренировка была достаточно продуктивной и вы заработали 2xp` 
+        : `Скорее всего сегодня вы тренировались с настоящим мастером и заработали целых 3xp!`;
+        let afterTrainInfoTemplate = `
+        <p>%trainInfo%</p>
+        <div>
+            <button type="submit" id="train-info-button">ок</button>
+        </div>
+        `;
+        let afterTrainInfo = afterTrainInfoTemplate.replace("%trainInfo%", trainInfo);
+        trainWindowInfo.innerHTML = afterTrainInfo;
+        let trainInfoBtn = document.querySelector('#train-info-button');
+        trainInfoBtn.addEventListener('click', () => {
+            trainWindowInfo.classList.toggle('block-hidden');
+            trainWindowCloseOpen();
+        });
+        experience += 3;
+    }
+});
+
+// regular fight action ----
+
+regulatFightBth.addEventListener('click', () => {
+    regularFightWindow.classList.toggle('block-hidden');
+    mainWindow.classList.toggle('block-hidden');
+
+    const playerRegularFightInfoTemplate = `
+    <h3>%name%</h3>
+    <img src="/profile-pic/user-profile.png" alt="player pic">
+    <p>Здоровье: %health%</p>
+    <p>Сила: %power%</p>
+    <p>Броня: %armor%</p>
+    <p>Уровень: %lvl% </p>
+    `;
+    const playerRegularFightInfo = playerRegularFightInfoTemplate
+                                                            .replace("%name%", playerName)
+                                                            .replace("%health%", health)
+                                                            .replace("%power%", power)
+                                                            .replace("%armor%", armor)
+                                                            .replace("%lvl%", level);
+    regularFightPlayerInfoContainer.innerHTML = playerRegularFightInfo;
+
+    regularOpponentGeneration();
+})
+
+regularFightCancelBtn.addEventListener('click', () => {
+    regularFightWindow.classList.toggle('block-hidden');
+    mainWindow.classList.toggle('block-hidden');
+});
+
+regularFightStartBtn.addEventListener('click', () => {
+
+});
+
+function regularOpponentGeneration() {
+    const regularOpponentCardContainer = document.querySelector(".opponent-info-regular-fight-window");
+    const regularOpponentInfoTemplate = `
+    <h3>%enemyName%</h3>
+    <img src="/profile-pic/random-opponent.png" alt="opponent pic">
+    <p>Здоровье: %health%</p>
+    <p>Сила: %power%</p>
+    <p>Броня: %armor%</p>
+    <p>Уровень: %lvl% </p>
+    `;
+    const regularOpponentName = regularEnemiesName[getRandomInt(0, regularEnemiesName.length)];
+    const regularOpponentLevel = getRandomInt(1, level);
+    const regularOpponentInfoText = regularOpponentInfoTemplate
+                                                        .replace('%enemyName%', regularOpponentName)
+                                                        .replace('%health%', statisticGenerationByLevel(regularOpponentLevel).health)
+                                                        .replace('%power%',  statisticGenerationByLevel(regularOpponentLevel).power)
+                                                        .replace('%armor%', statisticGenerationByLevel(regularOpponentLevel).armor)
+                                                        .replace('%lvl%', regularOpponentLevel);
+    regularOpponentCardContainer.innerHTML = regularOpponentInfoText;
+}
+
+function statisticGenerationByLevel(lvl) {
+    return {
+        health: getRandomInt(lvl * 10, lvl * 20),
+        power: getRandomInt(lvl * 3, lvl * 6),
+        armor: getRandomInt(0, lvl * 1)
+    }
+}
+
+
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
