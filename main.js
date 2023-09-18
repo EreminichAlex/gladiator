@@ -158,6 +158,7 @@ const armorItems = [
 ]
 const playerWeaponInventory = [];
 const playerArmorInventory = [];
+let activeWeapon;
 
 const regularEnemiesName = [
     "Луций", "Марк", "Александр", "Базил", "Вергилий", "Габит", 
@@ -179,12 +180,14 @@ let armor = 1;
 let experience = 0;
 let level = 1;
 let money = 0;
+let weaponPower = 0;
 
 const characterStataTemplate = `
 <img src="/profile-pic/user-profile.png" alt="боец"></img>
 <p>Здоровье: %health%</p>
 <p>Сила: %power%</p>
 <p>Броня: %armor%</p>
+<p>Сила оружия: %weaponPower%</p>
 <p>Опыт: %XP% / 10</p>
 <p>Уровень: %lvl% </p>
 <p>Монеты: %money%</p>
@@ -237,6 +240,7 @@ function start() {
                         .replace("%health%", health)
                         .replace("%power%", power)
                         .replace("%armor%", armor)
+                        .replace("%weaponPower%", weaponPower)
                         .replace("%XP%", experience)
                         .replace("%lvl%", level)
                         .replace("%money%", money);
@@ -246,10 +250,19 @@ function start() {
 }
 
 function refreshStata() {
+    let weaponActiveEffect;
+    if (weaponItems[activeWeapon]) {
+        weaponActiveEffect = weaponItems[activeWeapon].itemCharacteristics
+    } else {
+        weaponActiveEffect = 0;
+    }
+    weaponPower = weaponActiveEffect;
+
     characterStataTemplateText = characterStataTemplate
                         .replace("%health%", health)
                         .replace("%power%", power)
                         .replace("%armor%", armor)
+                        .replace("%weaponPower%", weaponPower)
                         .replace("%XP%", experience)
                         .replace("%lvl%", level)
                         .replace("%money%", money);
@@ -353,6 +366,7 @@ for (let i = 0 ; i < weaponBuyBtn.length; i++) {
                 weaponBuyBtn[i].setAttribute('disabled', '');
                 playerWeaponInventory.push(i);
                 weaponBuyBtn[i].innerHTML = "Куплено";
+                activeWeapon = i;
                 money -= weaponItems[i].cost;
                 refreshStata();
             }
@@ -393,6 +407,10 @@ const regularFightWindow = document.querySelector('.regular-fight-window');
 const regularFightStartBtn = document.querySelector('#regular-fights-button-start');
 const regularFightCancelBtn = document.querySelector('#regular-fights-button-cancel');
 const regularFightPlayerInfoContainer = document.querySelector(".player-info-regular-fight-window");
+const regularActionFightBlock = document.querySelector('.regular-fight-action-block');
+
+const regularFightWinWindow = document.querySelector('.regular-fight-win');
+
 
 function trainWindowCloseOpen() {
     trainWindow.classList.toggle('block-hidden');
@@ -461,10 +479,134 @@ regularFightCancelBtn.addEventListener('click', () => {
     regularFightWindow.classList.toggle('block-hidden');
     mainWindow.classList.toggle('block-hidden');
 });
+let regularOpponentName;
+let regularEnemyHealth;
+let regularEnemyPower;
+let regularEnemyArmor;
+let regularEnemyLevel;
 
 regularFightStartBtn.addEventListener('click', () => {
+    regularActionFightBlock.classList.toggle('block-hidden');
+    regularFightStartBtn.setAttribute('disabled','');
+    regularFightCancelBtn.setAttribute('disabled', '');
+    
+    let fightHealth = health;
+    let playerIsDefeated;
+    let enemyIsDefeated;
+    let isDraw;
 
+    for(let i = 1; health > 0 && regularEnemyHealth > 0; i++) {
+        
+        let fightActionInfoTemplate = `
+        <p class="stage-regular-fight">%i% этап</p>
+        <p>Вы наносите врагу <i>%yourDamageToEnemy%</i></p>
+        <p>%enemyName% наносит вам удар в размере <i>%enemyDamageToYou%</i></p>
+        <p>Ваше здоровье: <b>%health%</b> | Здоровье %enemyName%: <b>%enemyHealth%</b></p>
+        <br>
+        `;
+
+        let weaponPowerInFight;
+        if (weaponItems[activeWeapon]) {
+            weaponPowerInFight = weaponItems[activeWeapon].itemCharacteristics
+        } else {
+            weaponPowerInFight = 0;
+        }
+
+        let yourDamageToEnemy = weaponPowerInFight + power + (getRandomInt(0, power / 2));
+        let yourFullDamageToEnemy = Math.round(yourDamageToEnemy - (yourDamageToEnemy * (regularEnemyArmor/100)));
+        let enemyDamageToYou = power + (getRandomInt(0, regularEnemyPower / 2));
+        let enemyFullDamageToYou = Math.round(enemyDamageToYou - (enemyDamageToYou * (enemyDamageToYou/100)));
+
+
+
+        fightHealth = Math.round(fightHealth - enemyFullDamageToYou);
+        regularEnemyHealth = Math.round(regularEnemyHealth - yourFullDamageToEnemy);
+
+        if (fightHealth <= 0 && regularEnemyHealth <= 0) {
+            isDraw = true;
+            fightHealth = 0;
+            regularEnemyHealth = 0;
+        } else if (fightHealth <= 0 && regularEnemyHealth > 0) {
+            fightHealth = 0;
+            playerIsDefeated = true;
+            enemyIsDefeated = false;
+        } else if (regularEnemyHealth <= 0 && fightHealth > 0) {
+            regularEnemyHealth = 0;
+            playerIsDefeated = false;
+            enemyIsDefeated = true;
+        }
+
+        let fightActionInfoText = fightActionInfoTemplate
+                                                    .replace("%i%", i)
+                                                    .replace("%yourDamageToEnemy%", yourFullDamageToEnemy)
+                                                    .replace("%enemyName%", regularOpponentName)
+                                                    .replace("%enemyDamageToYou%", enemyFullDamageToYou)
+                                                    .replace("%health%", fightHealth)
+                                                    .replace("%enemyName%", regularOpponentName)
+                                                    .replace("%enemyHealth%", regularEnemyHealth);
+
+        regularActionFightBlock.innerHTML += fightActionInfoText;
+
+        if (playerIsDefeated) {
+            fightHealth = 0;
+            console.log("Игрок проиграл");
+        }
+        if (enemyIsDefeated) {
+            regularEnemyHealth = 0;
+            console.log("бот проиграл")
+            playerWinWindowShow();
+            const regularFightWinBtn = document.querySelector('#regular-battle-win-button');
+            regularFightWinBtn.addEventListener('click', () => {
+                regularFightWinWindow.classList.toggle("block-hidden");
+                regularFightStartBtn.classList.toggle('block-hidden');
+                regularFightCancelBtn.removeAttribute('disabled');
+
+// ЗДЕСЬ МОЩНЫЙ БАГ ВСЕ ПРОПАДАЕТ НА ТРЕТИЙ РАЗ НАДО РАЗОБРАТЬСЯ
+
+                regularFightCancelBtn.addEventListener('click', () => {
+                    regularFightStartBtn.classList.toggle('block-hidden');
+                    regularFightStartBtn.removeAttribute('disabled');
+                    regularActionFightBlock.innerHTML = ''
+                    regularActionFightBlock.classList.toggle('block-hidden');
+                })
+            })  
+        }
+        if (isDraw) {
+        }
+
+    
+        function playerWinWindowShow() {
+            regularFightWinWindow.classList.toggle("block-hidden");
+    
+            let regularFightWinTextTemplate = `
+            <h2>Вы победили!</h2>
+            <p>Вы одержали победу над <b>%enemyName%</b></p>
+            <p>Заработок: <i>%money%</i> | выпавшие вещи: <i>%enemyLoot%</i></p>
+            <p>Заработанный опыт: <i>%xp%</i></p>
+            <button type="submit" id="regular-battle-win-button">Ок</button>
+            `;
+            let regularFightWinText = regularFightWinTextTemplate
+                                                            .replace("%enemyName%", regularOpponentName)
+                                                            .replace("%money%", lootDropGeneration(regularEnemyLevel).money)
+                                                            .replace("%xp%", lootDropGeneration(regularEnemyLevel).experience);
+            console.log(regularFightWinText)
+            regularFightWinWindow.innerHTML = regularFightWinText;
+
+
+        }
+
+
+        refreshStata();                       
+    }
 });
+
+
+function lootDropGeneration(EnemyLvl) {
+    return {
+        money: (level - EnemyLvl > 1) ? (level - EnemyLvl) * getRandomInt(1, level) : 1 * getRandomInt(1, level), 
+        experience: getRandomInt(1,4) * (EnemyLvl/level),
+    }
+}
 
 function regularOpponentGeneration() {
     const regularOpponentCardContainer = document.querySelector(".opponent-info-regular-fight-window");
@@ -476,14 +618,17 @@ function regularOpponentGeneration() {
     <p>Броня: %armor%</p>
     <p>Уровень: %lvl% </p>
     `;
-    const regularOpponentName = regularEnemiesName[getRandomInt(0, regularEnemiesName.length)];
-    const regularOpponentLevel = getRandomInt(1, level);
+    regularOpponentName = regularEnemiesName[getRandomInt(0, regularEnemiesName.length - 1)];
+    regularEnemyLevel = getRandomInt(1, level);
+    regularEnemyHealth = statisticGenerationByLevel(regularEnemyLevel).health;
+    regularEnemyPower = statisticGenerationByLevel(regularEnemyLevel).power;
+    regularEnemyArmor = statisticGenerationByLevel(regularEnemyLevel).armor;
     const regularOpponentInfoText = regularOpponentInfoTemplate
                                                         .replace('%enemyName%', regularOpponentName)
-                                                        .replace('%health%', statisticGenerationByLevel(regularOpponentLevel).health)
-                                                        .replace('%power%',  statisticGenerationByLevel(regularOpponentLevel).power)
-                                                        .replace('%armor%', statisticGenerationByLevel(regularOpponentLevel).armor)
-                                                        .replace('%lvl%', regularOpponentLevel);
+                                                        .replace('%health%', regularEnemyHealth)
+                                                        .replace('%power%',  regularEnemyPower)
+                                                        .replace('%armor%', regularEnemyArmor)
+                                                        .replace('%lvl%', regularEnemyLevel);
     regularOpponentCardContainer.innerHTML = regularOpponentInfoText;
 }
 
