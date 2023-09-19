@@ -410,6 +410,7 @@ const regularFightPlayerInfoContainer = document.querySelector(".player-info-reg
 const regularActionFightBlock = document.querySelector('.regular-fight-action-block');
 
 const regularFightWinWindow = document.querySelector('.regular-fight-win');
+const regularFightLoseWindow = document.querySelector('.regular-fight-lose');
 
 
 function trainWindowCloseOpen() {
@@ -522,57 +523,56 @@ regularFightStartBtn.addEventListener('click', () => {
         fightHealth = Math.round(fightHealth - enemyFullDamageToYou);
         regularEnemyHealth = Math.round(regularEnemyHealth - yourFullDamageToEnemy);
 
+        
         if (fightHealth <= 0 && regularEnemyHealth <= 0) {
             isDraw = true;
             fightHealth = 0;
             regularEnemyHealth = 0;
-        } else if (fightHealth <= 0 && regularEnemyHealth > 0) {
+            break;
+        } else if (fightHealth <= 0 && regularEnemyHealth >= 0) {
             fightHealth = 0;
-            playerIsDefeated = true;
-            enemyIsDefeated = false;
+            playerLoseWindowShow(); 
+            const regularFightLoseBtn = document.querySelector('#regular-battle-lose-button');
+            regularFightLoseBtn.addEventListener('click', closeRegularFightLoseWindow); 
+            console.log(regularFightLoseBtn)
+            break;
         } else if (regularEnemyHealth <= 0 && fightHealth > 0) {
             regularEnemyHealth = 0;
-            playerIsDefeated = false;
-            enemyIsDefeated = true;
-        }
-
-        let fightActionInfoText = fightActionInfoTemplate
-                                                    .replace("%i%", i)
-                                                    .replace("%yourDamageToEnemy%", yourFullDamageToEnemy)
-                                                    .replace("%enemyName%", regularOpponentName)
-                                                    .replace("%enemyDamageToYou%", enemyFullDamageToYou)
-                                                    .replace("%health%", fightHealth)
-                                                    .replace("%enemyName%", regularOpponentName)
-                                                    .replace("%enemyHealth%", regularEnemyHealth);
-
-        regularActionFightBlock.innerHTML += fightActionInfoText;
-
-        if (playerIsDefeated) {
-            fightHealth = 0;
-            console.log("Игрок проиграл");
-        }
-        if (enemyIsDefeated) {
-            regularEnemyHealth = 0;
-            console.log("бот проиграл")
             playerWinWindowShow();
             const regularFightWinBtn = document.querySelector('#regular-battle-win-button');
-            regularFightWinBtn.addEventListener('click', () => {
-                regularFightWinWindow.classList.toggle("block-hidden");
-                regularFightStartBtn.classList.toggle('block-hidden');
-                regularFightCancelBtn.removeAttribute('disabled');
-
-// ЗДЕСЬ МОЩНЫЙ БАГ ВСЕ ПРОПАДАЕТ НА ТРЕТИЙ РАЗ НАДО РАЗОБРАТЬСЯ
-
-                regularFightCancelBtn.addEventListener('click', () => {
-                    regularFightStartBtn.classList.toggle('block-hidden');
-                    regularFightStartBtn.removeAttribute('disabled');
-                    regularActionFightBlock.innerHTML = ''
-                    regularActionFightBlock.classList.toggle('block-hidden');
-                })
-            })  
+            console.log("КНОПКА ОК"+regularFightWinBtn)
+            regularFightWinBtn.addEventListener('click', closeRegularFightWinWindow);  
+            break;
         }
-        if (isDraw) {
+        
+        if (fightHealth >= 0 && regularEnemyHealth >= 0) {
+            let fightActionInfoText = fightActionInfoTemplate
+            .replace("%i%", i)
+            .replace("%yourDamageToEnemy%", yourFullDamageToEnemy)
+            .replace("%enemyName%", regularOpponentName)
+            .replace("%enemyDamageToYou%", enemyFullDamageToYou)
+            .replace("%health%", fightHealth)
+            .replace("%enemyName%", regularOpponentName)
+            .replace("%enemyHealth%", regularEnemyHealth);
+
+            regularActionFightBlock.innerHTML += fightActionInfoText;
+        } else {
+            break;
         }
+
+
+        // if (playerIsDefeated) {
+        //     fightHealth = 0;
+        //     console.log("Игрок проиграл");
+        // }
+        // if (enemyIsDefeated) {
+        //     regularEnemyHealth = 0;
+        //     playerWinWindowShow();
+        //     const regularFightWinBtn = document.querySelector('#regular-battle-button');
+        //     regularFightWinBtn.addEventListener('click', closeRegularFightResultWindow);  
+        // }
+        // if (isDraw) {
+        // }
 
     
         function playerWinWindowShow() {
@@ -585,14 +585,42 @@ regularFightStartBtn.addEventListener('click', () => {
             <p>Заработанный опыт: <i>%xp%</i></p>
             <button type="submit" id="regular-battle-win-button">Ок</button>
             `;
+
+            let moneyGained = lootDropGeneration(regularEnemyLevel).money;
+            let experienceGained = lootDropGeneration(regularEnemyLevel).experience;
+            money += moneyGained;
+            experience += Math.round(experienceGained);
+
             let regularFightWinText = regularFightWinTextTemplate
                                                             .replace("%enemyName%", regularOpponentName)
-                                                            .replace("%money%", lootDropGeneration(regularEnemyLevel).money)
-                                                            .replace("%xp%", lootDropGeneration(regularEnemyLevel).experience);
-            console.log(regularFightWinText)
+                                                            .replace("%money%", moneyGained)
+                                                            .replace("%xp%", experienceGained);
             regularFightWinWindow.innerHTML = regularFightWinText;
 
 
+        }
+
+        function playerLoseWindowShow() {
+            regularFightLoseWindow.classList.toggle("block-hidden");
+            console.log(regularFightLoseWindow)
+            let regularFightLoseTextTemplate = `
+            <h2>Вы проиграли!</h2>
+            <p>Вас одолел <b>%enemyName%</b></p>
+            <p>Потерянные деньги: <i>%money%</i></p>
+            <p>Заработанный опыт: <i>%xp%</i></p>
+            <button type="submit" id="regular-battle-lose-button">Ок</button>
+            `;
+
+            let moneyLosed = lootDropGeneration(regularEnemyLevel).money;
+            let experienceGained = lootDropGeneration(regularEnemyLevel).experience;
+            money -= moneyLosed;
+            experience += experienceGained;
+
+            let regularFightLoseText = regularFightLoseTextTemplate
+                                                            .replace("%enemyName%", regularOpponentName)
+                                                            .replace("%money%", moneyLosed)
+                                                            .replace("%xp%", experienceGained);
+            regularFightLoseWindow.innerHTML = regularFightLoseText;
         }
 
 
@@ -600,10 +628,28 @@ regularFightStartBtn.addEventListener('click', () => {
     }
 });
 
+function closeRegularFightWinWindow() {
+    regularFightWinWindow.classList.toggle("block-hidden");
+    regularFightStartBtn.classList.toggle('block-hidden');
+    regularFightCancelBtn.removeAttribute('disabled');
+}
+
+function closeRegularFightLoseWindow() {
+    regularFightLoseWindow.classList.toggle("block-hidden");
+    regularFightStartBtn.classList.toggle('block-hidden');
+    regularFightCancelBtn.removeAttribute('disabled');
+}
+
+regularFightCancelBtn.addEventListener('click', () => {
+    regularFightStartBtn.classList.toggle('block-hidden');
+    regularFightStartBtn.removeAttribute('disabled');
+    regularActionFightBlock.innerHTML = ''
+    regularActionFightBlock.classList.toggle('block-hidden');
+})
 
 function lootDropGeneration(EnemyLvl) {
     return {
-        money: (level - EnemyLvl > 1) ? (level - EnemyLvl) * getRandomInt(1, level) : 1 * getRandomInt(1, level), 
+        money: (level - EnemyLvl > 1) ? (level - EnemyLvl) * getRandomInt(1, level + 2) : 1 * getRandomInt(1, level + 3), 
         experience: getRandomInt(1,4) * (EnemyLvl/level),
     }
 }
