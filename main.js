@@ -159,6 +159,7 @@ const armorItems = [
 const playerWeaponInventory = [];
 const playerArmorInventory = [];
 let activeWeapon;
+let activeArmor;
 
 const regularEnemiesName = [
     "Луций", "Марк", "Александр", "Базил", "Вергилий", "Габит", 
@@ -251,12 +252,21 @@ function start() {
 
 function refreshStata() {
     let weaponActiveEffect;
+    let armorActiveEffect;
     if (weaponItems[activeWeapon]) {
         weaponActiveEffect = weaponItems[activeWeapon].itemCharacteristics
     } else {
         weaponActiveEffect = 0;
     }
+
+    if (armorItems[activeArmor]) {
+        armorActiveEffect = armorItems[activeArmor].itemCharacteristics
+    } else {
+        armorActiveEffect = 0;
+    }
+
     weaponPower = weaponActiveEffect;
+    armor = armorActiveEffect;
 
     characterStataTemplateText = characterStataTemplate
                         .replace("%health%", health)
@@ -385,6 +395,7 @@ for (let i = 0 ; i < armorBuyBtn.length; i++) {
                 playerArmorInventory.push(i);
                 armorBuyBtn[i].innerHTML = "Куплено";
                 money -= armorItems[i].cost;
+                activeArmor = i;
                 refreshStata();
             }
         break;}
@@ -411,6 +422,7 @@ const regularActionFightBlock = document.querySelector('.regular-fight-action-bl
 
 const regularFightWinWindow = document.querySelector('.regular-fight-win');
 const regularFightLoseWindow = document.querySelector('.regular-fight-lose');
+const regularFightDrawWindow = document.querySelector('.regular-fight-draw');
 
 
 function trainWindowCloseOpen() {
@@ -454,6 +466,7 @@ trainWindowBtnStart.addEventListener('click', () => {
 // regular fight action ----
 
 regulatFightBth.addEventListener('click', () => {
+    refreshStata();
     regularFightWindow.classList.toggle('block-hidden');
     mainWindow.classList.toggle('block-hidden');
 
@@ -497,14 +510,7 @@ regularFightStartBtn.addEventListener('click', () => {
     let isDraw;
 
     for(let i = 1; health > 0 && regularEnemyHealth > 0; i++) {
-        
-        let fightActionInfoTemplate = `
-        <p class="stage-regular-fight">%i% этап</p>
-        <p>Вы наносите врагу <i>%yourDamageToEnemy%</i></p>
-        <p>%enemyName% наносит вам удар в размере <i>%enemyDamageToYou%</i></p>
-        <p>Ваше здоровье: <b>%health%</b> | Здоровье %enemyName%: <b>%enemyHealth%</b></p>
-        <br>
-        `;
+    
 
         let weaponPowerInFight;
         if (weaponItems[activeWeapon]) {
@@ -525,108 +531,123 @@ regularFightStartBtn.addEventListener('click', () => {
 
         
         if (fightHealth <= 0 && regularEnemyHealth <= 0) {
-            isDraw = true;
             fightHealth = 0;
             regularEnemyHealth = 0;
+            playerDrawWindowShow();
+            const regularFightDrawBtn = document.querySelector('#regular-battle-draw-button');
+            regularFightDrawBtn.addEventListener('click', closeRegularFightDrawWindow); 
+            actionBlockTextGeneration();
             break;
         } else if (fightHealth <= 0 && regularEnemyHealth >= 0) {
             fightHealth = 0;
             playerLoseWindowShow(); 
             const regularFightLoseBtn = document.querySelector('#regular-battle-lose-button');
             regularFightLoseBtn.addEventListener('click', closeRegularFightLoseWindow); 
-            console.log(regularFightLoseBtn)
+            actionBlockTextGeneration()
             break;
         } else if (regularEnemyHealth <= 0 && fightHealth > 0) {
             regularEnemyHealth = 0;
             playerWinWindowShow();
             const regularFightWinBtn = document.querySelector('#regular-battle-win-button');
-            console.log("КНОПКА ОК"+regularFightWinBtn)
+            actionBlockTextGeneration();
             regularFightWinBtn.addEventListener('click', closeRegularFightWinWindow);  
             break;
         }
-        
-        if (fightHealth >= 0 && regularEnemyHealth >= 0) {
-            let fightActionInfoText = fightActionInfoTemplate
-            .replace("%i%", i)
-            .replace("%yourDamageToEnemy%", yourFullDamageToEnemy)
-            .replace("%enemyName%", regularOpponentName)
-            .replace("%enemyDamageToYou%", enemyFullDamageToYou)
-            .replace("%health%", fightHealth)
-            .replace("%enemyName%", regularOpponentName)
-            .replace("%enemyHealth%", regularEnemyHealth);
 
-            regularActionFightBlock.innerHTML += fightActionInfoText;
-        } else {
-            break;
-        }
-
-
-        // if (playerIsDefeated) {
-        //     fightHealth = 0;
-        //     console.log("Игрок проиграл");
-        // }
-        // if (enemyIsDefeated) {
-        //     regularEnemyHealth = 0;
-        //     playerWinWindowShow();
-        //     const regularFightWinBtn = document.querySelector('#regular-battle-button');
-        //     regularFightWinBtn.addEventListener('click', closeRegularFightResultWindow);  
-        // }
-        // if (isDraw) {
-        // }
-
+        refreshStata();
+        console.log(i+"ЭТАП")
+        if (fightHealth > 0 && regularEnemyHealth > 0) {
+            actionBlockTextGeneration() 
+        }              
+        function actionBlockTextGeneration() {
+                let fightActionInfoTemplate = `
+                <p class="stage-regular-fight">%i% этап</p>
+                <p>Вы наносите врагу <i>%yourDamageToEnemy%</i></p>
+                <p>%enemyName% наносит вам удар в размере <i>%enemyDamageToYou%</i></p>
+                <p>Ваше здоровье: <b>%health%</b> | Здоровье %enemyName%: <b>%enemyHealth%</b></p>
+                <br>
+                `;
     
-        function playerWinWindowShow() {
-            regularFightWinWindow.classList.toggle("block-hidden");
+                let fightActionInfoText = fightActionInfoTemplate
+                .replace("%i%", i)
+                .replace("%yourDamageToEnemy%", yourFullDamageToEnemy)
+                .replace("%enemyName%", regularOpponentName)
+                .replace("%enemyDamageToYou%", enemyFullDamageToYou)
+                .replace("%health%", fightHealth)
+                .replace("%enemyName%", regularOpponentName)
+                .replace("%enemyHealth%", regularEnemyHealth);
     
-            let regularFightWinTextTemplate = `
-            <h2>Вы победили!</h2>
-            <p>Вы одержали победу над <b>%enemyName%</b></p>
-            <p>Заработок: <i>%money%</i> | выпавшие вещи: <i>%enemyLoot%</i></p>
-            <p>Заработанный опыт: <i>%xp%</i></p>
-            <button type="submit" id="regular-battle-win-button">Ок</button>
-            `;
-
-            let moneyGained = lootDropGeneration(regularEnemyLevel).money;
-            let experienceGained = lootDropGeneration(regularEnemyLevel).experience;
-            money += moneyGained;
-            experience += Math.round(experienceGained);
-
-            let regularFightWinText = regularFightWinTextTemplate
-                                                            .replace("%enemyName%", regularOpponentName)
-                                                            .replace("%money%", moneyGained)
-                                                            .replace("%xp%", experienceGained);
-            regularFightWinWindow.innerHTML = regularFightWinText;
-
-
-        }
-
-        function playerLoseWindowShow() {
-            regularFightLoseWindow.classList.toggle("block-hidden");
-            console.log(regularFightLoseWindow)
-            let regularFightLoseTextTemplate = `
-            <h2>Вы проиграли!</h2>
-            <p>Вас одолел <b>%enemyName%</b></p>
-            <p>Потерянные деньги: <i>%money%</i></p>
-            <p>Заработанный опыт: <i>%xp%</i></p>
-            <button type="submit" id="regular-battle-lose-button">Ок</button>
-            `;
-
-            let moneyLosed = lootDropGeneration(regularEnemyLevel).money;
-            let experienceGained = lootDropGeneration(regularEnemyLevel).experience;
-            money -= moneyLosed;
-            experience += experienceGained;
-
-            let regularFightLoseText = regularFightLoseTextTemplate
-                                                            .replace("%enemyName%", regularOpponentName)
-                                                            .replace("%money%", moneyLosed)
-                                                            .replace("%xp%", experienceGained);
-            regularFightLoseWindow.innerHTML = regularFightLoseText;
-        }
-
-
-        refreshStata();                       
+                regularActionFightBlock.innerHTML += fightActionInfoText;
+        }        
     }
+    
 });
+
+function playerWinWindowShow() {
+    regularFightWinWindow.classList.toggle("block-hidden");
+    let regularFightWinTextTemplate = `
+    <h2>Вы победили!</h2>
+    <p>Вы одержали победу над <b>%enemyName%</b></p>
+    <p>Заработок: <i>%money%</i> | выпавшие вещи: <i>%enemyLoot%</i></p>
+    <p>Заработанный опыт: <i>%xp%</i></p>
+    <button type="submit" id="regular-battle-win-button">Ок</button>
+    `;
+
+    let moneyGained = lootDropGeneration(regularEnemyLevel).money;
+    let experienceGained = Math.round(lootDropGeneration(regularEnemyLevel).experience);
+    money += moneyGained;
+    experience += Math.round(experienceGained);
+
+    let regularFightWinText = regularFightWinTextTemplate
+                                                    .replace("%enemyName%", regularOpponentName)
+                                                    .replace("%money%", moneyGained)
+                                                    .replace("%xp%", experienceGained);
+    regularFightWinWindow.innerHTML = regularFightWinText;
+
+    refreshStata();
+}
+
+function playerDrawWindowShow() {
+    regularFightDrawWindow.classList.toggle("block-hidden");
+    let regularFightDrawTextTemplate = `
+    <h2>Ничья!</h2>
+    <p>С бое с <b>%enemyName%</b> победитель не определился</p>
+    <p>Заработанный опыт: <i>%xp%</i></p>
+    <button type="submit" id="regular-battle-draw-button">Ок</button>
+    `;
+
+    let experienceGained = Math.round(lootDropGeneration(regularEnemyLevel).experience);
+    experience += experienceGained;
+
+    let regularFightDrawText = regularFightDrawTextTemplate
+                                                    .replace("%enemyName%", regularOpponentName)
+                                                    .replace("%xp%", experienceGained);
+    regularFightDrawWindow.innerHTML = regularFightDrawText;
+    refreshStata();
+}
+
+function playerLoseWindowShow() {
+    regularFightLoseWindow.classList.toggle("block-hidden");
+    let regularFightLoseTextTemplate = `
+    <h2>Вы проиграли!</h2>
+    <p>Вас одолел <b>%enemyName%</b></p>
+    <p>Потерянные деньги: <i>%money%</i></p>
+    <p>Заработанный опыт: <i>%xp%</i></p>
+    <button type="submit" id="regular-battle-lose-button">Ок</button>
+    `;
+
+    let moneyLosed = lootDropGeneration(regularEnemyLevel).money;
+    let experienceGained = Math.round(lootDropGeneration(regularEnemyLevel).experience);
+    money -= moneyLosed;
+    experience += experienceGained;
+
+    let regularFightLoseText = regularFightLoseTextTemplate
+                                                    .replace("%enemyName%", regularOpponentName)
+                                                    .replace("%money%", moneyLosed)
+                                                    .replace("%xp%", experienceGained);
+    regularFightLoseWindow.innerHTML = regularFightLoseText;
+    refreshStata();
+}
 
 function closeRegularFightWinWindow() {
     regularFightWinWindow.classList.toggle("block-hidden");
@@ -640,6 +661,12 @@ function closeRegularFightLoseWindow() {
     regularFightCancelBtn.removeAttribute('disabled');
 }
 
+function closeRegularFightDrawWindow() {
+    regularFightDrawWindow.classList.toggle("block-hidden");
+    regularFightStartBtn.classList.toggle('block-hidden');
+    regularFightCancelBtn.removeAttribute('disabled');
+}
+
 regularFightCancelBtn.addEventListener('click', () => {
     regularFightStartBtn.classList.toggle('block-hidden');
     regularFightStartBtn.removeAttribute('disabled');
@@ -649,7 +676,7 @@ regularFightCancelBtn.addEventListener('click', () => {
 
 function lootDropGeneration(EnemyLvl) {
     return {
-        money: (level - EnemyLvl > 1) ? (level - EnemyLvl) * getRandomInt(1, level + 2) : 1 * getRandomInt(1, level + 3), 
+        money: (level - EnemyLvl > 1) ? (level - EnemyLvl) * getRandomInt(EnemyLvl, level + 2) : 1 * getRandomInt(1, level + 3), 
         experience: getRandomInt(1,4) * (EnemyLvl/level),
     }
 }
